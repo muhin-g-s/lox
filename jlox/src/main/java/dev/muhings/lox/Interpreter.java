@@ -1,5 +1,6 @@
 package dev.muhings.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import dev.muhings.lox.Expr.Assign;
@@ -20,14 +21,30 @@ import dev.muhings.lox.Stmt.Expression;
 import dev.muhings.lox.Stmt.Function;
 import dev.muhings.lox.Stmt.If;
 import dev.muhings.lox.Stmt.Print;
-import dev.muhings.lox.Stmt.Return;
 import dev.muhings.lox.Stmt.Var;
 import dev.muhings.lox.Stmt.While;
 
 class Interpreter implements Expr.Visitor<Object>,
                              Stmt.Visitor<Void> {
-  private Environment environment = new Environment();
+  final Environment globals = new Environment();
+  private Environment environment = globals;
 	
+	Interpreter() {
+    globals.define("clock", new LoxCallable() {
+      @Override
+      public int arity() { return 0; }
+
+      @Override
+      public Object call(Interpreter interpreter,
+                         List<Object> arguments) {
+        return (double)System.currentTimeMillis() / 1000.0;
+      }
+
+      @Override
+      public String toString() { return "<native fn>"; }
+    });
+  }
+
 	void interpret(List<Stmt> statements) {
     try {
       for (Stmt statement : statements) {
@@ -157,8 +174,27 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Object visitCallExpr(Call expr) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitCallExpr'");
+		Object callee = evaluate(expr.callee);
+
+    List<Object> arguments = new ArrayList<>();
+    for (Expr argument : expr.arguments) { 
+      arguments.add(evaluate(argument));
+    }
+
+		if (!(callee instanceof LoxCallable)) {
+      throw new RuntimeError(expr.paren,
+          "Can only call functions and classes.");
+    }
+
+    LoxCallable function = (LoxCallable)callee;
+
+		 if (arguments.size() != function.arity()) {
+      throw new RuntimeError(expr.paren, "Expected " +
+          function.arity() + " arguments but got " +
+          arguments.size() + ".");
+    }
+
+    return function.call(this, arguments);
 	}
 
 	@Override
@@ -223,8 +259,9 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Void visitFunctionStmt(Function stmt) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitFunctionStmt'");
+    LoxFunction function = new LoxFunction(stmt, environment);
+    environment.define(stmt.name.lexeme, function);
+    return null;
 	}
 
 	@Override
@@ -271,9 +308,11 @@ class Interpreter implements Expr.Visitor<Object>,
 	}
 
 	@Override
-	public Void visitReturnStmt(Return stmt) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitReturnStmt'");
+	public Void visitReturnStmt(Stmt.Return stmt) {
+		 Object value = null;
+    if (stmt.value != null) value = evaluate(stmt.value);
+
+    throw new dev.muhings.lox.Return(value);
 	}
 
 	@Override
