@@ -49,8 +49,15 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Object visitLogicalExpr(Logical expr) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitLogicalExpr'");
+		Object left = evaluate(expr.left);
+
+    if (expr.operator.type == TokenType.OR) {
+      if (isTruthy(left)) return left;
+    } else {
+      if (!isTruthy(left)) return left;
+    }
+
+    return evaluate(expr.right);
 	}
 
 	@Override
