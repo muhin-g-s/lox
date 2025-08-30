@@ -1,7 +1,9 @@
 package dev.muhings.lox;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import dev.muhings.lox.Expr.Assign;
 import dev.muhings.lox.Expr.Binary;
@@ -28,6 +30,7 @@ class Interpreter implements Expr.Visitor<Object>,
                              Stmt.Visitor<Void> {
   final Environment globals = new Environment();
   private Environment environment = globals;
+	private final Map<Expr, Integer> locals = new HashMap<>();
 	
 	Interpreter() {
     globals.define("clock", new LoxCallable() {
@@ -53,6 +56,10 @@ class Interpreter implements Expr.Visitor<Object>,
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
     }
+  }
+
+	void resolve(Expr expr, int depth) {
+    locals.put(expr, depth);
   }
 
 	private void execute(Stmt stmt) {
@@ -204,14 +211,21 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Object visitVariableExpr(Variable expr) {
-		return environment.get ( expr.name );
+		return lookUpVariable(expr.name, expr);
 	}
 
 	@Override
 	public Object visitAssignExpr(Assign expr) {
 		Object value = evaluate(expr.value);
-    environment.assign(expr.name, value);
-    return value;
+    
+		Integer distance = locals.get(expr);
+    if (distance != null) {
+      environment.assignAt(distance, expr.name, value);
+    } else {
+      globals.assign(expr.name, value);
+    }
+
+		return value;
 	}
 
 	private String stringify(Object object) {
@@ -333,4 +347,13 @@ class Interpreter implements Expr.Visitor<Object>,
     }
     return null;
 	}
+
+	private Object lookUpVariable(Token name, Expr expr) {
+    Integer distance = locals.get(expr);
+    if (distance != null) {
+      return environment.getAt(distance, name.lexeme);
+    } else {
+      return globals.get(name);
+    }
+  }
 }
