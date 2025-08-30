@@ -289,7 +289,9 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Void visitWhileStmt(While stmt) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitWhileStmt'");
+		 while (isTruthy(evaluate(stmt.condition))) {
+      execute(stmt.body);
+    }
+    return null;
 	}
 }
