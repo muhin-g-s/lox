@@ -75,14 +75,12 @@ class Interpreter implements Expr.Visitor<Object>,
 	public Object visitUnaryExpr(Unary expr) {
 		Object right = evaluate(expr.right);
 
-    switch (expr.operator.type) {
-      case MINUS:
-        return -(double)right;
-			case  BANG :
-         return ! isTruthy( right );
-    }
-
-		return null;
+      return switch (expr.operator.type) {
+          case MINUS -> -(double)right;
+          case BANG -> ! isTruthy( right );
+          default -> null;
+      };
+      // return null;
 	}
 
 	@Override
@@ -91,44 +89,57 @@ class Interpreter implements Expr.Visitor<Object>,
     Object right = evaluate(expr.right); 
 
     switch (expr.operator.type) {
-      case MINUS:
-				checkNumberOperands(expr.operator, left, right);
-        return (double)left - (double)right;
-      case SLASH:
-				checkNumberOperands(expr.operator, left, right);
-        return (double)left / (double)right;
-      case STAR:
-				checkNumberOperands(expr.operator, left, right);
-        return (double)left * (double)right;
-			case PLUS:
-				if (left instanceof Double && right instanceof Double) {
-					return (double)left + (double)right;
-				} 
+      case MINUS -> {
+          checkNumberOperands(expr.operator, left, right);
+          return (double)left - (double)right;
+          }
+      case SLASH -> {
+          checkNumberOperands(expr.operator, left, right);
+          return (double)left / (double)right;
+          }
+      case STAR -> {
+          checkNumberOperands(expr.operator, left, right);
+          return (double)left * (double)right;
+          }
+			case PLUS -> { 
+                            if (left instanceof Double && right instanceof Double) {
+                                return (double)left + (double)right;
+                            }
+                            
+                            if (left instanceof String && right instanceof String) {
+                                return (String)left + (String)right;
+                            }
+                            
+                            throw new RuntimeError(expr.operator,
+                                    "Operands must be two numbers or two strings.");
+          }
+			case GREATER -> {
+                            checkNumberOperands(expr.operator, left, right);
+                            return (double)left > (double)right;
+          }
+      case GREATER_EQUAL -> {
+          checkNumberOperands(expr.operator, left, right);
+          return (double)left >= (double)right;
+          }
+      case LESS -> {
+          checkNumberOperands(expr.operator, left, right);
+          return (double)left < (double)right;
+          }
+      case LESS_EQUAL -> {
+          checkNumberOperands(expr.operator, left, right);
+          return (double)left <= (double)right;
+          }
+			case BANG_EQUAL -> {
+                            return !isEqual(left, right);
+          }
+      case EQUAL_EQUAL -> {
+          return isEqual(left, right);
+          }
 
-				if (left instanceof String && right instanceof String) {
-					return (String)left + (String)right;
-				}
-
-				throw new RuntimeError(expr.operator,
-            "Operands must be two numbers or two strings.");
-			case GREATER:
-				checkNumberOperands(expr.operator, left, right);
-        return (double)left > (double)right;
-      case GREATER_EQUAL:
-				checkNumberOperands(expr.operator, left, right);
-        return (double)left >= (double)right;
-      case LESS:
-				checkNumberOperands(expr.operator, left, right);
-        return (double)left < (double)right;
-      case LESS_EQUAL:
-				checkNumberOperands(expr.operator, left, right);
-        return (double)left <= (double)right;
-			case BANG_EQUAL: return !isEqual(left, right);
-      case EQUAL_EQUAL: return isEqual(left, right);
+			default -> {
+                            return null;
+          }
     }
-
-    // Unreachable.
-    return null;
 	}
 
 	@Override
@@ -211,8 +222,12 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Void visitIfStmt(If stmt) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitIfStmt'");
+		if (isTruthy(evaluate(stmt.condition))) {
+      execute(stmt.thenBranch);
+    } else if (stmt.elseBranch != null) {
+      execute(stmt.elseBranch);
+    }
+    return null;
 	}
 
 	@Override

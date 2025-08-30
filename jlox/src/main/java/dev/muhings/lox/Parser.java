@@ -5,6 +5,7 @@ import java.util.List;
 
 import static dev.muhings.lox.TokenType.BANG;
 import static dev.muhings.lox.TokenType.BANG_EQUAL;
+import static dev.muhings.lox.TokenType.ELSE;
 import static dev.muhings.lox.TokenType.EOF;
 import static dev.muhings.lox.TokenType.EQUAL;
 import static dev.muhings.lox.TokenType.EQUAL_EQUAL;
@@ -12,6 +13,7 @@ import static dev.muhings.lox.TokenType.FALSE;
 import static dev.muhings.lox.TokenType.GREATER;
 import static dev.muhings.lox.TokenType.GREATER_EQUAL;
 import static dev.muhings.lox.TokenType.IDENTIFIER;
+import static dev.muhings.lox.TokenType.IF;
 import static dev.muhings.lox.TokenType.LEFT_BRACE;
 import static dev.muhings.lox.TokenType.LEFT_PAREN;
 import static dev.muhings.lox.TokenType.LESS;
@@ -107,6 +109,7 @@ public class Parser {
 	private Stmt statement() {
     if (match(PRINT)) return printStatement();
 		if (match(LEFT_BRACE)) return new Stmt.Block(block());
+		if (match(IF)) return ifStatement();
 
     return expressionStatement();
   }
@@ -120,6 +123,20 @@ public class Parser {
 
     consume(RIGHT_BRACE, "Expect '}' after block.");
     return statements;
+  }
+
+	private Stmt ifStatement() {
+    consume(LEFT_PAREN, "Expect '(' after 'if'.");
+    Expr condition = expression();
+    consume(RIGHT_PAREN, "Expect ')' after if condition."); 
+
+    Stmt thenBranch = statement();
+    Stmt elseBranch = null;
+    if (match(ELSE)) {
+      elseBranch = statement();
+    }
+
+    return new Stmt.If(condition, thenBranch, elseBranch);
   }
 
 	private Stmt printStatement() {
