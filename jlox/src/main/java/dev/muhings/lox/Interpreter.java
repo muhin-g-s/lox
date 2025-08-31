@@ -86,8 +86,16 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Object visitSetExpr(Set expr) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitSetExpr'");
+		Object object = evaluate(expr.object);
+
+    if (!(object instanceof LoxInstance)) { 
+      throw new RuntimeError(expr.name,
+                             "Only instances have fields.");
+    }
+
+    Object value = evaluate(expr.value);
+    ((LoxInstance)object).set(expr.name, value);
+    return value;
 	}
 
 	@Override
@@ -98,8 +106,7 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Object visitThisExpr(This expr) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitThisExpr'");
+		return lookUpVariable(expr.keyword, expr);
 	}
 
 	@Override
@@ -175,8 +182,13 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Object visitGetExpr(Get expr) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitGetExpr'");
+		Object object = evaluate(expr.object);
+    if (object instanceof LoxInstance loxInstance) {
+      return loxInstance.get(expr.name);
+    }
+
+    throw new RuntimeError(expr.name,
+        "Only instances have properties.");
 	}
 
 	@Override
@@ -273,7 +285,7 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Void visitFunctionStmt(Function stmt) {
-    LoxFunction function = new LoxFunction(stmt, environment);
+    LoxFunction function = new LoxFunction(stmt, environment, false);
     environment.define(stmt.name.lexeme, function);
     return null;
 	}
@@ -310,8 +322,22 @@ class Interpreter implements Expr.Visitor<Object>,
 
 	@Override
 	public Void visitClassStmt(Class stmt) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitClassStmt'");
+		environment.define(stmt.name.lexeme, null);
+
+		Map<String, LoxFunction> methods = new HashMap<>();
+    for (Stmt.Function method : stmt.methods) {
+      LoxFunction function = new LoxFunction(
+				method, 
+				environment,
+        method.name.lexeme.equals("init")
+			);
+      methods.put(method.name.lexeme, function);
+    }
+
+    LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
+
+    environment.assign(stmt.name, klass);
+    return null;
 	}
 
 	@Override
