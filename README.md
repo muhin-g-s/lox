@@ -4,7 +4,7 @@ Lox is a full-featured, efficient scripting language from Robert Nystrom's book,
 
 In Jlox, the Java implementation of Lox, scripts are parsed using a recursive descent parser then interpreted by traversing the generated AST.
 
-/* Lox GRAMMAR (lowest to highest precedence)
+Lox GRAMMAR (lowest to highest precedence)
 --------------------------------------------------------------
 program        → declaration* EOF 
 declaration    → classDecl | funcDecl | varDecl | statement
@@ -34,4 +34,3 @@ unary          → ( "!" | "-" ) unary | call
 call           → primary ( "(" arguments? ")" | "." IDENTIFIER )*
 arguments      → expression ( "," expression )*
 primary        → "true" | "false" | "nil" | "this" | NUMBER | STRING | IDENTIFIER | "(" expression ")" | "super" "." IDENTIFIER
-*/
