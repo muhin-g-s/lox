@@ -22,6 +22,7 @@ bool isAtEnd();
 char advance();
 bool match(char expected);
 char peek();
+char peekNext();
 
 Token makeToken(TokenType type);
 Token errorToken(const char* message);
@@ -86,6 +87,11 @@ char peek() {
   return *scanner.current;
 }
 
+char peekNext() {
+  if (isAtEnd()) return '\0';
+  return scanner.current[1];
+}
+
 Token makeToken(TokenType type) {
   Token token;
   token.type = type;
@@ -116,6 +122,13 @@ void skipWhitespace() {
 			case '\n':
         scanner.line++;
         advance();
+        break;
+			case '/':
+        if (peekNext() == '/') {
+          while (peek() != '\n' && !isAtEnd()) advance();
+        } else {
+          return;
+        }
         break;
       default:
         return;
