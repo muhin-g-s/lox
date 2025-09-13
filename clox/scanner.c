@@ -19,6 +19,7 @@ void initScanner(const char* source) {
 }
 
 bool isAtEnd();
+bool isDigit(char c);
 char advance();
 bool match(char expected);
 char peek();
@@ -26,6 +27,8 @@ char peekNext();
 
 Token makeToken(TokenType type);
 Token errorToken(const char* message);
+Token string();
+Token number();
 void skipWhitespace();
 
 Token scanToken() {
@@ -36,6 +39,8 @@ Token scanToken() {
   if (isAtEnd()) return makeToken(TOKEN_EOF);
 
 	char c = advance();
+	
+	if (isDigit(c)) return number();
 
   switch (c) {
     case '(': return makeToken(TOKEN_LEFT_PAREN);
@@ -62,6 +67,8 @@ Token scanToken() {
     case '>':
       return makeToken(
           match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+
+		case '"': return string();
   }
 
   return errorToken("Unexpected character.");
@@ -69,6 +76,10 @@ Token scanToken() {
 
 bool isAtEnd() {
   return *scanner.current == '\0';
+}
+
+bool isDigit(char c) {
+  return c >= '0' && c <= '9';
 }
 
 char advance() {
@@ -134,4 +145,28 @@ void skipWhitespace() {
         return;
     }
   }
+}
+
+Token string() {
+  while (peek() != '"' && !isAtEnd()) {
+    if (peek() == '\n') scanner.line++;
+    advance();
+  }
+
+  if (isAtEnd()) return errorToken("Unterminated string.");
+
+  advance();
+  return makeToken(TOKEN_STRING);
+}
+
+Token number() {
+  while (isDigit(peek())) advance();
+
+  if (peek() == '.' && isDigit(peekNext())) {
+    advance();
+
+    while (isDigit(peek())) advance();
+  }
+
+  return makeToken(TOKEN_NUMBER);
 }
