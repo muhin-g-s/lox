@@ -7,18 +7,18 @@
 
 VM vm; 
 
-static void resetStack() {
+static void resetStack(void) {
   vm.stackTop = vm.stack;
 }
 
-void initVM() {
+void initVM(void) {
 	resetStack();
 }
 
-void freeVM() {
+void freeVM(void) {
 }
 
-static InterpretResult run() {
+static InterpretResult run(void) {
 	#define READ_BYTE() (*vm.ip++)
 	#define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 	#define BINARY_OP(op) \
@@ -75,7 +75,7 @@ void push(Value value) {
   vm.stackTop++;
 }
 
-Value pop() {
+Value pop(void) {
   vm.stackTop--;
   return *vm.stackTop;
 }
