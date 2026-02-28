@@ -1,11 +1,11 @@
 #include <stdio.h>
 
-#include "common.h"
+#include "../common/common.h"
 #include "vm.h"
-#include "debug.h"
-#include "compiler.h"
+#include "../debug/debug.h"
+#include "../compiler/compiler.h"
 
-VM vm; 
+VM vm;
 
 static void resetStack(void) {
   vm.stackTop = vm.stack;

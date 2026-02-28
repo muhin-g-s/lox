@@ -1,8 +1,8 @@
-#ifndef clox_chunk_h 
+#ifndef clox_chunk_h
 #define clox_chunk_h
 
-#include "common.h"
-#include "value.h"
+#include "../common/common.h"
+#include "../value/value.h"
 
 typedef enum {
   OP_RETURN,

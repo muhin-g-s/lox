@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-#include "common.h"
+#include "../common/common.h"
 #include "compiler.h"
-#include "scanner.h"
+#include "../scanner/scanner.h"
 
 void compile(const char* source) {
 	initScanner(source);
@@ -16,7 +16,7 @@ void compile(const char* source) {
     } else {
       printf("   | ");
     }
-    printf("%2d '%.*s'\n", token.type, token.length, token.start); 
+    printf("%2d '%.*s'\n", token.type, token.length, token.start);
 
     if (token.type == TOKEN_EOF) break;
   }

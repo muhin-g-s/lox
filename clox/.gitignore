@@ -1,2 +1,2 @@
-clox
-*.o
+bin
+build

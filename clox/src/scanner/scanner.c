@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "common.h"
+#include "../common/common.h"
 #include "scanner.h"
 
 typedef struct {
@@ -39,7 +39,7 @@ Token scanToken() {
   if (isAtEnd()) return makeToken(TOKEN_EOF);
 
 	char c = advance();
-	
+
 	if (isDigit(c)) return number();
 
   switch (c) {
