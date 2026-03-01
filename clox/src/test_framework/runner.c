@@ -43,39 +43,84 @@ static void printRunnedSuites(void) {
     }
 }
 
-static bool isFilterEmpty(const char *filter) {
-    return filter == NULL || filter[0] == '\0';
+typedef struct {
+    const char *suiteName;
+    const char *testName;
+} Filter;
+
+#define SEPORATOR ':'
+
+static Filter parseFilter(const char *filter) {
+    Filter f = {0};
+    const char *seporator = strchr(filter, SEPORATOR);
+    if (seporator) {
+        f.suiteName = strndup(filter, seporator - filter);
+        f.testName = strdup(seporator + 1);
+    } else {
+        f.suiteName = strdup(filter);
+    }
+    return f;
 }
 
-static bool matchSuite(const char *suite, const char *filter) {
-    return isFilterEmpty(filter) || strcmp(suite,filter)==0;
+static void freeFilter(Filter *f) {
+    free((void*)f->suiteName);
+    free((void*)f->testName);
 }
 
-static bool matchTest(const char *test, const char *filter) {
-    if(isFilterEmpty(filter)) return true;
-
-    char *pos = strchr(filter, ':');
-    if(pos == NULL) return false;
-
-    return strcmp(test, pos+1) == 0;
+static bool filterHasTestName(const Filter *f) {
+    return f->testName != NULL;
 }
 
-static void runTests(const char *filter) {
+static void runSuite(const test_suite_t *suite) {
+    appendSuite(suite->name);
+
+    for(int j=0;j<suite->test_count;j++) {
+        test_case_t *tc = suite->tests[j];
+        g_tests_run++;
+        runTestWithSetupAndTeardown(tc);
+    }
+}
+
+static void runAll(void) {
     for(int i=0;i<g_suite_count;i++) {
         test_suite_t *suite = g_suites[i];
+        runSuiteWithSetupAndTeardown(suite, runSuite);
+    }
+}
 
-        bool suiteMatches = matchSuite(suite->name, filter);
-        if(suiteMatches) {
-            appendSuite(suite->name);
-        };
-
-        for(int j=0;j<suite->test_count;j++) {
-            test_case_t *tc = suite->tests[j];
-            if(!suiteMatches && !matchTest(tc->name, filter)) continue;
-            g_tests_run++;
-            tc->func();
+static bool runByFilter(const Filter *filter) {
+    if(filterHasTestName(filter)) {
+        const test_case_t *tc = findTestByName(g_suites, filter->suiteName, filter->testName);
+        if(tc) {
+            runTestWithSetupAndTeardown(tc);
+            return true;
+        } else {
+            printf("Test '%s' not found in suite '%s'\n", filter->testName, filter->suiteName);
+            return false;
+        }
+    } else {
+        const test_suite_t *suite = findSuiteByName(g_suites, filter->suiteName);
+        if(suite) {
+            runSuiteWithSetupAndTeardown(suite, runSuite);
+            return true;
+        } else {
+            printf("Suite '%s' not found\n", filter->suiteName);
+            return false;
         }
     }
+}
+
+static bool runTests(const char *filterRaw) {
+    if (filterRaw == NULL) {
+        runAll();
+        return true;
+    }
+
+    Filter filter = parseFilter(filterRaw);
+    bool result = runByFilter(&filter);
+    freeFilter(&filter);
+
+    return result;
 }
 
 static void printStatistics(void) {
@@ -87,7 +132,13 @@ static void printStatistics(void) {
 
 void run(const char *filter) {
     initRunnedSuites();
-    runTests(filter);
+
+    bool result = runTests(filter);
+    if (!result) {
+        freeRunnedSuites();
+        return;
+    }
+
     printStatistics();
     freeRunnedSuites();
 }

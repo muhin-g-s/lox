@@ -6,7 +6,8 @@ int add(int a,int b){return a+b;}
 TEST_SUITE(TestAdd)
 
 TEST(TestAdd, test_add) {
-    ASSERT_EQ_INT(7, add(3,4));
+    ASSERT_EQ_INT(5, add(2,3));
+    ASSERT_EQ_INT(-3, add(2,-3));
 }
 
 TEST_SUITE(Math)
