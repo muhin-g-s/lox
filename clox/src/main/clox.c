@@ -4,7 +4,7 @@
 
 #include "../vm/vm.h"
 
-static void repl() {
+static void repl(void) {
   char line[1024];
   for (;;) {
     printf("> ");
