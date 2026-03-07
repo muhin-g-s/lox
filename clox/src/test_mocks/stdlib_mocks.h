@@ -6,6 +6,7 @@
 
 extern int g_mock_exit_called;
 extern int mock_exit_code;
+extern jmp_buf mock_exit_env;
 
 void exit(int code);
 bool is_first_call(void);

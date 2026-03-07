@@ -25,5 +25,19 @@ TEST(memory, reallocate_failure)
     reset_memory_mocks(NULL);
     reset_stdlib_mocks();
 
+    if (setjmp(mock_exit_env) == 0) {
+        reallocate(NULL, 0, 64);
+        ASSERT_FAIL("Should have called exit");
+    } else {
+        ASSERT_EQ(1, g_mock_exit_called);
+        ASSERT_EQ(1, mock_exit_code);
+    }
+}
+
+TEST(memory, reallocate_failure2)
+{
+    reset_memory_mocks(NULL);
+    reset_stdlib_mocks();
+
     ASSERT_EXIT_CODE(1, reallocate(NULL, 0, 64));
 }

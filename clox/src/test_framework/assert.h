@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <setjmp.h>
+
 #include "../test_mocks/stdlib_mocks.h"
 
 extern int g_tests_failed;
@@ -46,12 +48,13 @@ extern int g_tests_failed;
 
 #define ASSERT_EXIT_CODE(expected_code, code)           \
     do {                                                \
-        g_mock_exit_called = 0;                         \
-        if (is_first_call()) {                          \
+        if (setjmp(mock_exit_env) == 0) {                          \
             code;                                       \
+            ASSERT_FAIL("Should have called exit");     \
+        } else {                                        \
+            ASSERT_EQ(1, g_mock_exit_called);           \
+            ASSERT_EQ(expected_code, mock_exit_code);   \
         }                                               \
-        ASSERT_EQ(1, g_mock_exit_called);               \
-        ASSERT_EQ(expected_code, mock_exit_code);       \
     } while(0)
 
 #endif
