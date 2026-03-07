@@ -9,16 +9,22 @@
 
 extern int g_tests_failed;
 
-#define EQ(e,a, isFatal)                                 \
+void assert_fail(const char* file, int line, const char* msg);
+
+#define CHECK(expr, isFatal, msg)                        \
     do {                                                 \
-        __typeof__ (e) _e = (e);                         \
-        __typeof__ (a) _a = (a);                         \
-        if (_e != _a) {                                  \
-            g_tests_failed++;                            \
-            printf("FAIL %s:%d: expected %d, got %d\n", __FILE__, __LINE__, _e, _a); \
+        if (!(expr)) {                                   \
+            assert_fail(__FILE__, __LINE__, msg);        \
             if (isFatal) return;                         \
             else break;                                  \
         }                                                \
+    } while(0)
+
+#define EQ(e, a, isFatal)                                   \
+    do {                                                    \
+        __typeof__(e) _e = (e);                             \
+        __typeof__(a) _a = (a);                             \
+        CHECK(_e == _a, isFatal, "Expected " #e " == " #a); \
     } while(0)
 
 #define ASSERT_EQ(e,a) EQ(e, a, true)
@@ -26,12 +32,7 @@ extern int g_tests_failed;
 
 #define CHECK_NULL(p, operand, isFatal)                  \
     do {                                                 \
-        if (!((p) operand NULL)) {                          \
-            g_tests_failed++;                            \
-            printf("FAIL %s:%d: expected value %s NULL\n", __FILE__, __LINE__, #operand); \
-            if (isFatal) return;                         \
-            else break;                                  \
-        }                                                \
+        CHECK((p) operand NULL, isFatal, "Expected " #p " " #operand " NULL"); \
     } while(0)
 
 #define ASSERT_NULL(p) CHECK_NULL(p, ==, true)
@@ -39,12 +40,7 @@ extern int g_tests_failed;
 #define ASSERT_NOT_NULL(p) CHECK_NULL(p, !=, true)
 #define EXPECT_NOT_NULL(p) CHECK_NULL(p, !=, false)
 
-#define ASSERT_FAIL(msg)                                \
-    do {                                                \
-        g_tests_failed++;                               \
-        printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, msg); \
-        return;                                         \
-    } while(0)
+#define ASSERT_FAIL(msg) CHECK(false, true, msg)
 
 #define ASSERT_EXIT_CODE(expected_code, code)           \
     do {                                                \
