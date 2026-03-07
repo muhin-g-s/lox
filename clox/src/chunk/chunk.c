@@ -4,30 +4,46 @@
 #include "../memory/memory.h"
 
 void initChunk(Chunk* chunk) {
-  chunk->count = 0;
-  chunk->capacity = 0;
+  chunk->countCode = 0;
+  chunk->capacityCode = 0;
   chunk->code = NULL;
+
+  chunk->countLines = 0;
+  chunk->capacityLines = 0;
 	chunk->lines = NULL;
 
 	initValueArray(&chunk->constants);
 }
 
+// Отрефакторить
 void writeChunk(Chunk* chunk, uint8_t byte, int line) {
-  if (chunk->capacity < chunk->count + 1) {
-    int oldCapacity = chunk->capacity;
-    chunk->capacity = GROW_CAPACITY(oldCapacity);
-    chunk->code = GROW_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacity);
-		chunk->lines = GROW_ARRAY(int, chunk->lines, oldCapacity, chunk->capacity);
+  if (chunk->capacityCode < chunk->countCode + 1) {
+    int oldCapacity = chunk->capacityCode;
+    chunk->capacityCode = GROW_CAPACITY(oldCapacity);
+    chunk->code = GROW_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacityCode);
   }
 
-  chunk->code[chunk->count] = byte;
-	chunk->lines[chunk->count] = line;
-  chunk->count++;
+  chunk->code[chunk->countCode] = byte;
+	chunk->lines[chunk->countCode] = line;
+  chunk->countCode++;
+
+  if(line > chunk->countLines) {
+    int oldCapacity = chunk->capacityLines;
+    
+    if (chunk->capacityLines < line) {
+      chunk->capacityLines = GROW_CAPACITY(oldCapacity);
+      chunk->lines = GROW_ARRAY(int, chunk->lines, oldCapacity, chunk->capacityLines);
+    }
+
+    chunk->countLines = line;
+  }
+
+  chunk->lines[line - 1] = chunk->countCode - 1;
 }
 
 void freeChunk(Chunk* chunk) {
-  FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
-	FREE_ARRAY(int, chunk->lines, chunk->capacity);
+  FREE_ARRAY(uint8_t, chunk->code, chunk->capacityCode);
+	FREE_ARRAY(int, chunk->lines, chunk->capacityCode);
 
 	freeValueArray(&chunk->constants);
 
@@ -37,4 +53,15 @@ void freeChunk(Chunk* chunk) {
 int addConstant(Chunk* chunk, Value value) {
   writeValueArray(&chunk->constants, value);
   return chunk->constants.count - 1;
+}
+
+// Cделать через бинарный поиск
+int getLine(Chunk* chunk, int instruction) {
+  for (int i = 0; i < chunk->countLines; i++) {
+    if (instruction <= chunk->lines[i]) {
+      return i + 1;
+    }
+  }
+
+  return -1;
 }
