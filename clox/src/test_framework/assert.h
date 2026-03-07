@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include "../test_mocks/stdlib_mocks.h"
 
 extern int g_tests_failed;
 
@@ -35,5 +36,23 @@ extern int g_tests_failed;
 #define EXPECT_NULL(p) CHECK_NULL(p, ==, false)
 #define ASSERT_NOT_NULL(p) CHECK_NULL(p, !=, true)
 #define EXPECT_NOT_NULL(p) CHECK_NULL(p, !=, false)
+
+#define ASSERT_FAIL(msg)                                \
+    do {                                                \
+        g_tests_failed++;                               \
+        printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, msg); \
+        return;                                         \
+    } while(0)
+
+#define ASSERT_EXIT_CODE(expected_code, code)           \
+    do {                                                \
+        if (is_first_call()) {                          \
+            code;                                       \
+            ASSERT_FAIL("Should have called exit");     \
+        } else {                                        \
+            ASSERT_EQ(1, g_mock_exit_called);           \
+            ASSERT_EQ(expected_code, mock_exit_code);   \
+        }                                               \
+    } while(0)
 
 #endif

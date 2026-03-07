@@ -14,3 +14,7 @@ void reset_stdlib_mocks(void) {
     g_mock_exit_called = 0;
     mock_exit_code = 0;
 }
+
+bool is_first_call(void) {
+    return setjmp(mock_exit_env) == 0;
+}
