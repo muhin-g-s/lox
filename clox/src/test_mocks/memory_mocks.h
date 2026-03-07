@@ -10,6 +10,7 @@ extern void* mock_realloc_result;
 void free(void* ptr);
 void* realloc(void* ptr, size_t size);
 
-void reset_memory_mocks(void* realloc_result);
+void setupMemoryMocks();
+void setupMemoryMocksWithMemory(void** bloks, int max_allocs);
 
 #endif

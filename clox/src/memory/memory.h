@@ -3,8 +3,10 @@
 
 #include "../common/common.h"
 
+#define MIN_CAPACITY 8
+
 #define GROW_CAPACITY(capacity) \
-    ((capacity) < 8 ? 8 : (capacity) * 2)
+    ((capacity) < MIN_CAPACITY ? MIN_CAPACITY : (capacity) * 2)
 
 #define GROW_ARRAY(type, pointer, oldCount, newCount) \
     (type*)reallocate(pointer, sizeof(type) * (oldCount), \

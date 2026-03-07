@@ -20,15 +20,17 @@ void assert_fail(const char* file, int line, const char* msg);
         }                                                \
     } while(0)
 
-#define EQ(e, a, isFatal)                                   \
-    do {                                                    \
-        __typeof__(e) _e = (e);                             \
-        __typeof__(a) _a = (a);                             \
-        CHECK(_e == _a, isFatal, "Expected " #e " == " #a); \
+#define EQ(e, a, isFatal, msg, ...)                      \
+    do {                                                 \
+        __typeof__(e) _e = (e);                          \
+        __typeof__(a) _a = (a);                          \
+        char _msg[1024];                                 \
+        snprintf(_msg, sizeof(_msg), msg, ##__VA_ARGS__);\
+        CHECK(_e == _a, isFatal, _msg);                  \
     } while(0)
 
-#define ASSERT_EQ(e,a) EQ(e, a, true)
-#define EXPECT_EQ(e,a) EQ(e, a, false)
+#define ASSERT_EQ(e,a) EQ(e, a, true, "Expected %d == %d", e, a)
+#define EXPECT_EQ(e,a) EQ(e, a, false, "Expected %d == %d", e, a)
 
 #define CHECK_NULL(p, operand, isFatal)                  \
     do {                                                 \
@@ -52,5 +54,15 @@ void assert_fail(const char* file, int line, const char* msg);
             ASSERT_EQ(expected_code, mock_exit_code);   \
         }                                               \
     } while(0)
+
+#define EXPECT_TRUE(expr) CHECK(expr, false, "Expected " #expr " to be true")
+#define ASSERT_TRUE(expr) CHECK(expr, true, "Expected " #expr " to be true")
+#define EXPECT_FALSE(expr) CHECK(!expr, false, "Expected " #expr " to be false")
+#define ASSERT_FALSE(expr) CHECK(!expr, true, "Expected " #expr " to be false")
+
+#define ASSERT_MORE_THAN(a, b) CHECK((a) > (b), true, "Expected " #a " > " #b)
+#define EXPECT_MORE_THAN(a, b) CHECK((a) > (b), false, "Expected " #a " > " #b)
+#define ASSERT_LESS_THAN(a, b) CHECK((a) < (b), true, "Expected " #a " < " #b)
+#define EXPECT_LESS_THAN(a, b) CHECK((a) < (b), false, "Expected " #a " < " #b)
 
 #endif

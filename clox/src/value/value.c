@@ -29,3 +29,7 @@ void freeValueArray(ValueArray* array) {
 void printValue(Value value) {
   printf("%g", value);
 }
+
+bool valuesEqual(Value a, Value b) {
+  return a == b;
+}
