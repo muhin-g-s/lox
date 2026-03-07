@@ -6,16 +6,16 @@ int add(int a,int b){return a+b;}
 TEST_SUITE(TestAdd)
 
 TEST(TestAdd, test_add) {
-    ASSERT_EQ_INT(5, add(2,3));
-    ASSERT_EQ_INT(-3, add(2,-3));
+    ASSERT_EQ(5, add(2,3));
+    ASSERT_EQ(-3, add(2,-3));
 }
 
 TEST_SUITE(Math)
 
 TEST(Math, test_add_positive) {
-    ASSERT_EQ_INT(5, 2+3);
+    ASSERT_EQ(5, 2+3);
 }
 
 TEST(Math, test_add_negative) {
-    ASSERT_EQ_INT(-1, 2+(-3));
+    ASSERT_EQ(-1, 2+(-3));
 }
