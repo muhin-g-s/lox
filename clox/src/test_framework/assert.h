@@ -26,7 +26,7 @@ extern int g_tests_failed;
 
 #define CHECK_NULL(p, operand, isFatal)                  \
     do {                                                 \
-        if ((p) operand NULL) {                          \
+        if (!((p) operand NULL)) {                          \
             g_tests_failed++;                            \
             printf("FAIL %s:%d: expected value %s NULL\n", __FILE__, __LINE__, #operand); \
             if (isFatal) return;                         \

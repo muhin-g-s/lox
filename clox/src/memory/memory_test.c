@@ -4,40 +4,40 @@
 #include "../test_mocks/stdlib_mocks.h"
 #include "memory.h"
 
-TEST_SUITE(memory)
+TEST_SUITE(Memory)
 
-TEST(memory, reallocate_success)
-{
-    void* fake_ptr = (void*)0x9999;
-    reset_memory_mocks(fake_ptr);
-    reset_stdlib_mocks();
+TEST(Memory, reallocate_zero_size_frees_pointer) {
+    int dummy;
 
-    void* result = reallocate(NULL, 0, 64);
+    reset_memory_mocks(NULL);
 
-    ASSERT_EQ(1, g_mock_realloc_called);
-    ASSERT_EQ(0, g_mock_free_called);
-    ASSERT_EQ(0, g_mock_exit_called);
-    ASSERT_EQ(fake_ptr, result);
+    void* result = reallocate(&dummy, sizeof(int), 0);
+
+    EXPECT_NULL(result);
+    EXPECT_EQ(1, g_mock_free_called);
+    EXPECT_EQ(0, g_mock_realloc_called);
 }
 
-TEST(memory, reallocate_failure)
-{
+TEST(Memory, reallocate_success_returns_new_pointer) {
+    int dummy;
+    int newBlock;
+
+    reset_memory_mocks(&newBlock);
+
+    void* result = reallocate(&dummy, sizeof(int), sizeof(int) * 2);
+
+    EXPECT_EQ(&newBlock, result);
+    EXPECT_EQ(1, g_mock_realloc_called);
+    EXPECT_EQ(0, g_mock_free_called);
+}
+
+TEST(Memory, reallocate_failure_exits) {
+    int dummy;
+
     reset_memory_mocks(NULL);
     reset_stdlib_mocks();
 
-    if (setjmp(mock_exit_env) == 0) {
-        reallocate(NULL, 0, 64);
-        ASSERT_FAIL("Should have called exit");
-    } else {
-        ASSERT_EQ(1, g_mock_exit_called);
-        ASSERT_EQ(1, mock_exit_code);
-    }
-}
+    ASSERT_EXIT_CODE(1, reallocate(&dummy, sizeof(int), sizeof(int) * 2));
 
-TEST(memory, reallocate_failure2)
-{
-    reset_memory_mocks(NULL);
-    reset_stdlib_mocks();
-
-    ASSERT_EXIT_CODE(1, reallocate(NULL, 0, 64));
+    EXPECT_EQ(1, g_mock_realloc_called);
 }
