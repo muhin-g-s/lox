@@ -31,6 +31,8 @@ void freeChunk(Chunk* chunk);
 
 void writeChunk(Chunk* chunk, uint8_t byte, int line);
 int addConstant(Chunk* chunk, Value value);
+Value getConstantByIndex(Chunk* chunk, int index);
+uint8_t getCodeByIndex(Chunk* chunk, int index);
 
 int getLine(Chunk* chunk, int instruction);
 

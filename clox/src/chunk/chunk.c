@@ -24,7 +24,6 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line) {
   }
 
   chunk->code[chunk->countCode] = byte;
-	chunk->lines[chunk->countCode] = line;
   chunk->countCode++;
 
   if(line > chunk->countLines) {
@@ -55,8 +54,22 @@ int addConstant(Chunk* chunk, Value value) {
   return chunk->constants.count - 1;
 }
 
+// Проверить мб стоит где-то еще юзать 
+Value getConstantByIndex(Chunk* chunk, int index) {
+  return chunk->constants.values[index];
+}
+
+// Проверить мб стоит где-то еще юзать 
+uint8_t getCodeByIndex(Chunk* chunk, int index) {
+    return chunk->code[index];
+}
+
 // Cделать через бинарный поиск
 int getLine(Chunk* chunk, int instruction) {
+  if(instruction < 0) {
+    return -1;
+  }
+
   for (int i = 0; i < chunk->countLines; i++) {
     if (instruction <= chunk->lines[i]) {
       return i + 1;
