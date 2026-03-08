@@ -4,6 +4,8 @@
 #include "../test_mocks/stdlib_mocks.h"
 #include "value.h"
 
+
+
 TEST_SUITE(ValueArray)
 
 TEST(ValueArray, initValueArray) {
@@ -36,12 +38,7 @@ TEST(ValueArray, writeValueArrayNoAlloc) {
     EXPECT_TRUE(valuesEqual(valueArray.values[0], testValue));
 }
 
-TEST(ValueArray, writeValueArrayAlloc) {
-    Value blok[MEMORY_SIZE];
-    #define SIZE 1
-    Value* memmory[SIZE] = {&blok};
-    setupMemoryMocksWithMemory(memmory, SIZE);
-
+TEST(ValueArray, writeValueArrayAlloc, setupMemoryMocks) {
     ValueArray valueArray;
     initValueArray(&valueArray);
 
@@ -56,7 +53,7 @@ TEST(ValueArray, writeValueArrayAlloc) {
 }
 
 TEST(ValueArray, freeValueArray) {
-    setupMemoryMocks(NULL);
+    setupMemoryMocks();
 
     ValueArray valueArray;
     Value values[MEMORY_SIZE];

@@ -11,6 +11,5 @@ void free(void* ptr);
 void* realloc(void* ptr, size_t size);
 
 void setupMemoryMocks();
-void setupMemoryMocksWithMemory(void** bloks, int max_allocs);
 
 #endif

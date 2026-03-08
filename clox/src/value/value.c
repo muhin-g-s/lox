@@ -26,6 +26,10 @@ void freeValueArray(ValueArray* array) {
   initValueArray(array);
 }
 
+bool valuesArrayEquels(ValueArray a, ValueArray b) {
+  return a.values == b.values;
+}
+
 void printValue(Value value) {
   printf("%g", value);
 }
